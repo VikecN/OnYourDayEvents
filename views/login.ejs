@@ -1,0 +1,162 @@
+<style>
+    #login-page {
+        display: block;
+    }
+
+    #home-page {
+        display: none;
+    }
+</style>
+
+<div id="login-page">
+    <h1>Login:</h1>
+    <div>
+        <h2 id="error-message"></h2>
+        <label for="name">Username:</label>
+        <input type="text" name="name" id="name" value="vikec"></input>
+        <label for="password">Password:</label>
+        <input type="password" name="password" id="password" value="vik12"></input>
+        <button onClick="callApi()">Login</button>
+    </div>
+</div>
+
+<div id="home-page">
+    <h1>Hi, <span id="full-name"></span></h1>
+    <div id="user-data">
+        <h3 id="username"></h3>
+        <h3 id="date-of-birth"></h3>
+    </div>
+    <button onclick="logout()">Logout</button>
+    <div id="DOBEvents">
+        <div class="events">
+            <h2>Events:</h2>
+            <ul id="dob-events-list">
+            </ul>
+        </div>
+        <div class="births">
+            <h2>Births:</h2>
+            <ul id="dob-births-list">
+            </ul>
+        </div>
+        <div class="deaths">
+            <h2>Deaths:</h2>
+            <ul id="dob-deaths-list">
+            </ul>
+        </div>
+    </div>
+</div>
+
+<script>
+    var user = null;
+    var events = [];
+    var bitths = [];
+    var deaths = [];
+
+    const renderUserData = () => {
+        console.log(user)
+        let fullName = document.getElementById("full-name");
+        let username = document.getElementById("username");
+        let dateOfBirth = document.getElementById("date-of-birth");
+
+        fullName.innerText = user.fullName;
+        username.innerText = user.username;
+        dateOfBirth.innerText = user.dob;
+    }   
+
+    const renderEvents = () => {
+        let listEvents = document.getElementById("dob-events-list");
+
+        for (var i = 0; i < events.length; i++) {
+            var event = events[i];
+            var li = document.createElement('li');
+            var div = document.createElement('div');
+
+            var text = document.createElement('div');
+            text.innerHTML = event.no_year_html;
+            div.appendChild(text);
+
+            li.appendChild(div);
+            listEvents.appendChild(li);
+        }
+    }
+
+    const renderBirths = () => {
+        let listBirths = document.getElementById("dob-births-list");
+
+        for (var i = 0; i < births.length; i++) {
+            var birth = births[i];
+            var li = document.createElement('li');
+            var div = document.createElement('div');
+
+            var text = document.createElement('div');
+            text.innerHTML = birth.no_year_html;
+            div.appendChild(text);
+
+            li.appendChild(div);
+            listBirths.appendChild(li);
+        }
+    }
+
+    const renderDeaths = () => {
+        let listDeaths = document.getElementById("dob-deaths-list");
+
+        for (var i = 0; i < deaths.length; i++) {
+            var death = deaths[i];
+            var li = document.createElement('li');
+            var div = document.createElement('div');
+
+            var text = document.createElement('div');
+            text.innerHTML = death.no_year_html;
+            div.appendChild(text);
+
+            li.appendChild(div);
+            listDeaths.appendChild(li);
+        }
+    }
+     
+    const callApi = async () => {
+            const response = await fetch("http://localhost:8081/login", {method: "POST", headers: {"Content-Type": "application/json"}, body: JSON.stringify({username: document.getElementById("name").value, password: document.getElementById("password").value})})
+            .then(async (res) => {
+                const resJson = await res.json();
+                console.log(resJson);
+                console.log(resJson.dateInfo.data.Events[0].no_year_html);
+
+                let errorMessage = document.getElementById("error-message");
+
+                if(res.status !== 201) {
+                    errorMessage.innerText = resJson.message;
+                }else{
+                    errorMessage.innerText = "";
+                    user = resJson.user;
+                    events = resJson.dateInfo.data.Events;
+                    births = resJson.dateInfo.data.Births;
+                    deaths = resJson.dateInfo.data.Deaths;
+                    isLoggedIn();
+                }
+                
+            });
+            renderUserData();
+            renderEvents();
+            renderBirths();
+            renderDeaths();
+    }
+
+    const logout = () => {
+        user = null;
+        events = [];
+        bitths = [];
+        deaths = [];
+        isLoggedIn();
+    }
+
+    const isLoggedIn = () => {
+        if(user != null){
+            document.getElementById("login-page").style.display = "none";
+            document.getElementById("home-page").style.display = "block";
+        }else {
+            document.getElementById("login-page").style.display = "block";
+            document.getElementById("home-page").style.display = "none";
+        }
+    }
+    
+</script>
